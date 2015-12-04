@@ -12,14 +12,16 @@
   <title>Her er mit kort ;)</title>
   <style type="text/css">
     .country {
-      transform: scale(1,1);
-      transition: transform 0.5s, stroke 250ms;
+      stroke: transparent;
+      stroke-width: 1px;
+
+      transition: transform 0.5s ease-out, stroke 250ms ease-in 200ms;
+      transform-box: fill-box; /* default in Chrome*/
+      transform-origin: center bottom;
     }
     .country:hover {
       stroke: grey;
-      transform: scale(1.1,1.1);
-      transform-box: fill-box; /* default in Chrome*/
-      transform-origin: center;
+      transform: scale(1.1);
     }
   </style>
   <g>
