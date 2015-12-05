@@ -15,11 +15,11 @@
       stroke: transparent;
       stroke-width: 1px;
 
-      transition: transform 0.5s ease-out, stroke 250ms ease-in 200ms;
-      transform-box: fill-box; /* default in Chrome*/
+      transition: transform 0.5s ease-out, stroke 250ms ease-in 150ms;
+      transform-box: fill-box;
       transform-origin: center bottom;
     }
-    .country:hover {
+    .country.active {
       stroke: grey;
       transform: scale(1.1);
     }
@@ -192,7 +192,7 @@
     <path class="country" id="negros" fill="#84C47B" d="M797.109,295.22l-0.101,5.01l1.82,1.83l0.67,3.562l1.82,0.39l0.858-2.22l-1.43-1.062   l-0.38-6.26L797.109,295.22L797.109,295.22z"></path>
     <path class="country" id="cebu" fill="#84C47B" d="M802.28,297.15l-0.102,4.432l1.052,1.729l1.818-2.12l-0.479-3.85L802.28,297.15L802.28,297.15z"></path>
     <path class="country" id="samar" fill="#84C47B" d="M803.42,293.29l1.82,2.408l0.859,2.312h1.631l-0.291-3.95l-1.819-1.25L803.42,293.29   L803.42,293.29z"></path>
-    <path class="country" id="path7462" fill="#84C47B" d="M806.96,302.35l0.38,2.89l-3.35,2.7l-2.771,0.29l-2.96,3.181l0.101,1.449l2.771-0.87   l1.91-1.25l1.63,4.142l2.87,2.02l1.149-0.39l1.051-1.25l-2.29-2.312l1.34-1.06l1.53,1.25l1.05-1.729l-1.05-2.121l-0.19-4.72   L806.96,302.35L806.96,302.35z"></path>
+<!--    <path class="country" id="path7462" fill="#84C47B" d="M806.96,302.35l0.38,2.89l-3.35,2.7l-2.771,0.29l-2.96,3.181l0.101,1.449l2.771-0.87   l1.91-1.25l1.63,4.142l2.87,2.02l1.149-0.39l1.051-1.25l-2.29-2.312l1.34-1.06l1.53,1.25l1.05-1.729l-1.05-2.121l-0.19-4.72   L806.96,302.35L806.96,302.35z"></path>-->
     <path class="country" id="luzon" fill="#84C47B" d="M791.38,272.97l-2.58,1.83l-0.29,5.78l4.021,7.8l1.34,1.06l1.72-1.16l2.96,0.48l0.57,2.6   l2.2,0.19l1.05-1.44l-1.34-1.83l-1.631-1.54l-3.439-0.38l-1.818-2.988l2.1-3.182l0.189-2.79l-1.431-3.56L791.38,272.97   L791.38,272.97z"></path>
     <path class="country" id="mindoro" fill="#84C47B" d="M792.72,290.21l0.761,2.698l1.341,0.87l0.96-1.25l-1.53-2.12L792.72,290.21L792.72,290.21z"></path>
     <path class="country" id="hainan" fill="#84C47B" d="M759.83,270.17l-2.391,0.67l-1.721,2.12l1.432,2.79l2.1,0.188l2.391-2.12l0.569-2.79   L759.83,270.17L759.83,270.17z"></path>
@@ -373,4 +373,63 @@
     <path class="country" id="thrace" fill="#84C47B" d="M523.02,209.698l-0.158,3.552l3.1-0.95l1.42-0.95l-0.42-1.54l-1.47-1.17L523.02,209.698  L523.02,209.698z"></path>
     <path class="country" id="crete" fill="#84C47B" d="M516.76,230.59l1.631,0.05l0.681,1.01h2.368l1.58-0.58l0.53,0.642l-1.05,1.38l-4.63,0.16  l-0.84-1.11l-0.89-0.53L516.76,230.59L516.76,230.59z"></path>
   </g>
+  <g id="animated-country"></g>
+<script type="application/ecmascript">
+  <![CDATA[
+    "use strict";
+    var countries = [].slice.call(document.querySelectorAll(".country"));
+    countries.forEach(function(country) {
+      //console.log(country.id);
+      var handler = mouseHandler(country);
+      country.addEventListener("mouseover", handler.hover);
+      country.addEventListener("mouseout", handler.blur);
+    });
+
+    function mouseHandler(country) {
+      var svg = document.getElementById("animated-country"),
+          pathContainer = country.parentElement;
+      return {
+        hover: function(ev) {
+          moveToTop(svg, country, pathContainer);
+          defer(addClass, country, "active"); // give the DOM time to move the path before we animate (or the animation is lost)
+        },
+        blur: function(ev) {
+          removeClass(country, "active");
+          //returnToStack(svg, country, pathContainer);
+          country.addEventListener("transitionend", function outro() {
+            returnToStack(svg, country, pathContainer);
+            country.removeEventListener("transitionend", outro);
+          });
+        }
+      }
+    }
+
+    function moveToTop(svg, path, pathContainer) {
+    try {
+      pathContainer.removeChild(path);
+      } catch(err) { console.log(path.id)}
+      svg.appendChild(path);
+    }
+    function returnToStack(svg, path, pathContainer) {
+    try {
+      svg.removeChild(path);
+      } catch(err) { console.log(path.id)}
+      pathContainer.appendChild(path);
+    }
+    function addClass(path, c) {
+      path.classList.add(c);
+    }
+    function removeClass(path, c) {
+      path.classList.remove(c);
+    }
+    function defer(fn /* args */) {
+      var args = Array.prototype.slice.call(arguments, 1);
+      return wait.apply(null, [fn, 0].concat(args));
+    }
+    function wait(fn, miliseconds /* args */) {
+      var args = Array.prototype.slice.call(arguments, 2);
+      return setTimeout.apply(null, [fn, miliseconds].concat(args));
+    }
+  ]]>
+</script>
 </svg>
