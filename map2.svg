@@ -8,7 +8,10 @@
 <!ENTITY % XHTML.prefix "xhtml" >
 <!ENTITY % MATHML.module "IGNORE" >
 ]>
-<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet" version="1.1" id="svg2" viewBox="0 0 950 546.5">
+<svg preserveAspectRatio="xMinYMin meet" version="1.1" id="svg2" viewBox="0 0 950 546.5"
+    xmlns="http://www.w3.org/2000/svg"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <title>Her er mit kort ;)</title>
   <style type="text/css">
     .country {
@@ -25,41 +28,26 @@
       transform: scale(1.1);
     }
   </style>
-  <script type"application/ecmascript">
-   <![CDATA[
-    if (!Object.assign) {
-      Object.defineProperty(Object, 'assign', {
-        enumerable: false,
-        configurable: true,
-        writable: true,
-        value: function(target) {
-          'use strict';
-          if (target === undefined || target === null) {
-            throw new TypeError('Cannot convert first argument to object');
+  <script xlink:href="vendor/system.js"/>
+  <script type="application/ecmascript">
+    <![CDATA[
+      "use strict";
+      // set our baseURL reference path
+      System.config({
+        baseURL: '/',
+        meta: {
+          // meaning [baseURL]/vendor/angular.js when no other rules are present
+          // path is normalized using map and paths configuration
+          'lib/compose.js': {
+            format: 'global', // load this module as a global
+            exports: 'compose' // the global property to take as the module value
           }
-    
-          var to = Object(target);
-          for (var i = 1; i < arguments.length; i++) {
-            var nextSource = arguments[i];
-            if (nextSource === undefined || nextSource === null) {
-              continue;
-            }
-            nextSource = Object(nextSource);
-    
-            var keysArray = Object.keys(nextSource);
-            for (var nextIndex = 0, len = keysArray.length; nextIndex < len; nextIndex++) {
-              var nextKey = keysArray[nextIndex];
-              var desc = Object.getOwnPropertyDescriptor(nextSource, nextKey);
-              if (desc !== undefined && desc.enumerable) {
-                to[nextKey] = nextSource[nextKey];
-              }
-            }
-          }
-          return to;
         }
       });
-    }
-   ]]>
+    
+      // loads /app/main.js
+      System.import("lib/compose.js");
+    ]]>
   </script>
   <g>
     <path class="country" id="estonia" fill="hsl(113, 39%, 63%)" d="M517.77,143.658l-5.6-0.198l-3.55,2.17l-0.05,1.608l2.3,2.17l7.149,1.211L517.77,143.658  L517.77,143.658z"></path>
@@ -420,8 +408,6 @@
         animateContainer = document.getElementById("animated-country");
 
     countries.map(function(country, i) {
-      var handler = Object.create(mouseHandler(animateContainer, country));
-      handler = eventEmitter(handler);
       return { // this is called a country object from now on
         id: i,
         name: country.name,
@@ -431,25 +417,11 @@
       byId[country.id] = country;
     });
 
-    svg.addEventListener("mousemove", eventFilter, true);
-    
-    function compose() {
-      var functions = [].slice.call(arguments);
-      return function() {
-        var args = [].slice.call(arguments);
-        functions.forEach(function(fn) {
-          args = Array.isArray(args) ? args : [args];
-          args = fn.apply(null, args);
-        });
-        return args;
-      }
-    }
-    
-    function filter(countries) {
-      return function() {
-        
-      }
-    }
+   // svg.addEventListener("mousemove", eventFilter, true);
+    var composition = compose(add,half);
+    console.log( composition(42,42) ); 
+    function add(a,b) { return a+b; }
+    function half(a) { return a/2; }
   ]]>
 </script>
 </svg>
