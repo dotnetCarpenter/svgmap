@@ -1,3 +1,4 @@
 node_modules
-build/browser.j*
-build/bundle.j*
+build/utilities.js
+map.htm
+.vscode

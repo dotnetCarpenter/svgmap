@@ -28,25 +28,11 @@
       transform: scale(1.1);
     }
   </style>
-  <script xlink:href="vendor/system.js"/>
+  <script xlink:href="build/utilities.js"/>
   <script type="application/ecmascript">
     <![CDATA[
       "use strict";
-      // set our baseURL reference path
-      System.config({
-        baseURL: '/',
-        meta: {
-          // meaning [baseURL]/vendor/angular.js when no other rules are present
-          // path is normalized using map and paths configuration
-          'lib/compose.js': {
-            format: 'global', // load this module as a global
-            exports: 'compose' // the global property to take as the module value
-          }
-        }
-      });
-    
-      // loads /app/main.js
-      System.import("lib/compose.js");
+      //util.polyfill();
     ]]>
   </script>
   <g>
@@ -418,7 +404,7 @@
     });
 
    // svg.addEventListener("mousemove", eventFilter, true);
-    var composition = compose(add,half);
+    var composition = util.compose(add,half);
     console.log( composition(42,42) ); 
     function add(a,b) { return a+b; }
     function half(a) { return a/2; }

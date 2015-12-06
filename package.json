@@ -4,14 +4,16 @@
   "description": "Demo an interactive world map in SVG",
   "private": true,
   "scripts": {
-    "start": "node build/build.js cjs && live-server --open=map2.svg .",
-    "test": "tape test/*.js"
+    "start": "npm run build && live-server --open=map2.svg .",
+    "test": "tape test/*.js",
+    "build": "browserify build/bundle.js --standalone util --debug --outfile build/utilities.js",
+    "#postinstall": "mkdirp vendor && cp node_modules/systemjs/dist/system.j* vendor/"
   },
   "author": "dotnetCarpenter <jon.ronnenberg@gmail.com>",
   "license": "ISC",
   "dependencies": {
-    "systemjs": "^0.19.6",
-    "systemjs-builder": "^0.14.11"
+    "browserify": "^12.0.1",
+    "mkdirp": "^0.5.1"
   },
   "devDependencies": {
     "live-server": "git+https://github.com/dotnetCarpenter/live-server.git",
