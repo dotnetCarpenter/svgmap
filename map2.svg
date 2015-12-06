@@ -25,6 +25,42 @@
       transform: scale(1.1);
     }
   </style>
+  <script type"application/ecmascript">
+   <![CDATA[
+    if (!Object.assign) {
+      Object.defineProperty(Object, 'assign', {
+        enumerable: false,
+        configurable: true,
+        writable: true,
+        value: function(target) {
+          'use strict';
+          if (target === undefined || target === null) {
+            throw new TypeError('Cannot convert first argument to object');
+          }
+    
+          var to = Object(target);
+          for (var i = 1; i < arguments.length; i++) {
+            var nextSource = arguments[i];
+            if (nextSource === undefined || nextSource === null) {
+              continue;
+            }
+            nextSource = Object(nextSource);
+    
+            var keysArray = Object.keys(nextSource);
+            for (var nextIndex = 0, len = keysArray.length; nextIndex < len; nextIndex++) {
+              var nextKey = keysArray[nextIndex];
+              var desc = Object.getOwnPropertyDescriptor(nextSource, nextKey);
+              if (desc !== undefined && desc.enumerable) {
+                to[nextKey] = nextSource[nextKey];
+              }
+            }
+          }
+          return to;
+        }
+      });
+    }
+   ]]>
+  </script>
   <g>
     <path class="country" id="estonia" fill="hsl(113, 39%, 63%)" d="M517.77,143.658l-5.6-0.198l-3.55,2.17l-0.05,1.608l2.3,2.17l7.149,1.211L517.77,143.658  L517.77,143.658z"></path>
     <path class="country" id="brunei" fill="hsl(113, 39%, 63%)" d="M779.77,319.25l-2.879,3.488l2.359,0.74l1.33-1.859L779.77,319.25L779.77,319.25z"></path>
@@ -383,297 +419,36 @@
         byId = {},
         animateContainer = document.getElementById("animated-country");
 
-    countries.map(function(country) {
+    countries.map(function(country, i) {
       var handler = Object.create(mouseHandler(animateContainer, country));
       handler = eventEmitter(handler);
       return { // this is called a country object from now on
-        id: country.id,
-        handler: handler,
-        path: country,
-        isAnimating: false,
-        isActive: false
+        id: i,
+        name: country.name,
+        path: country
       };
-    }).forEach(function(country) {
+    }).forEach(function(country, i) {
       byId[country.id] = country;
     });
-    
-    var eventFilter = eventEmitter(Object.create(filter(countries)));
 
     svg.addEventListener("mousemove", eventFilter, true);
     
+    function compose() {
+      var functions = [].slice.call(arguments);
+      return function() {
+        var args = [].slice.call(arguments);
+        functions.forEach(function(fn) {
+          args = Array.isArray(args) ? args : [args];
+          args = fn.apply(null, args);
+        });
+        return args;
+      }
+    }
+    
     function filter(countries) {
-      var filter = [];
-      return {
-        add: function(country) {
-          
-        },
-        remove: function(country) {},
-        isInFilter: function(country) {}
+      return function() {
+        
       }
-    }
-
-    function mouseHandler(svg, path) {
-      var pathContainer = path.parentElement;
-      return {
-        hover: function(country) {
-          var self = this;
-          country.isAnimating = true;
-          moveToTop(svg, path, pathContainer);
-          self.trigger("active");
-          path.addEventListener("transitionend", function intro() {
-            path.removeEventListener("transitionend", intro);
-            country.isAnimating = false;
-            country.isActive = true;
-          });
-          defer(addClass, path, "active"); // give the DOM time to move the path before we animate (or the animation is lost)
-        },
-        blur: function(country) {
-          country.isAnimating = true;
-          removeClass(path, "active");
-          path.addEventListener("transitionend", function outro() {
-            path.removeEventListener("transitionend", outro);
-            returnToStack(svg, path, pathContainer);
-            country.isActive = country.isAnimating = false;
-          });
-        }
-      }
-    }
-
-    function eventEmitter(obj) {
-      var listeners = [];
-
-      obj.on = function(type, fn) {
-        listeners.push([type, fn]);
-        return this;
-      }
-      obj.off = function(type, fn) {
-        var listener;
-        for(var i = 0, len = listeners.length; i < len; i++) {
-          listener = listeners[i];
-          if((listener[0] === type && listener[1] === listener)) {
-            listeners.splice(i, 1);
-            break;
-          }
-        }
-        return this;
-      }
-      obj.trigger = function(type) {
-        listeners.forEach(function(listener) {
-          if(listener[0] === type) listener[1]();
-        });
-        return this;
-      }
-      obj.once = function(type, fn) {
-        var self = this;
-        this.on(type, function once() {
-          self.off(type, once);
-          fn();
-        });
-        return this;
-      }
-      obj.onIdempotent = function(type, fn) {
-        if( !isInListeners(type, fn) )
-          this.on(type, fn);
-        return this;
-      }
-      obj.onReplace = function(type, oldfn, newfn) {
-        if( isInListeners(type, oldfn) ) {
-          this.off(type, oldfn);
-          this.on(type, fn);
-        }
-        return this;
-      }
-      obj.offAll = function(type) {
-        listeners = listeners.filter(function(listener) {
-          return !(listener[0] === type);
-        });
-        return this;
-      }
-
-      function isInListeners(type, fn) {
-        return listeners.some(function(listener) {
-          return listener[0] === type && listener[1] === listener;
-        });
-      }
-
-      return obj;
-    }
-
-    function logBuffer(buffer, prefix) { console.log(prefix, buffer.MAX_PENDING, buffer.get(), buffer.head, buffer.tail, buffer.eventQueue)}
-    function delegate() {
-      var MAX_PENDING = 300;
-      var animateInBuffer = eventEmitter(Object.create(ringBuffer(MAX_PENDING))),
-          animateOutBuffer = eventEmitter(Object.create(ringBuffer(MAX_PENDING)));
-      //var buffer = new RingBuffer(MAX_PENDING);
-      return function(ev) {
-        //TODO: make sure the same country is not hovered or blured repeatedly
-        //TODO: the check should work with the async behavior of hover and blur
-        ev.stopPropagation();
-        var country = byId[ev.target.id];
-
-        if(!country) return;
-        console.log(country.id);
-
-        // throw an error if we have exchausted the event queues
-        if(!animateInBuffer.hasSpace() || !animateOutBuffer.hasSpace())
-          throw new Error("[OVERFLOW] Too many mouse events recieved to process!");
-
-        country.handler.once("active", function() {
-          animateOutBuffer.forEach(function() { animate(animateOutBuffer, true); });
-          animateOutBuffer.add(country);
-        });
-        if(!country.isAnimating || !country.isActive)
-          animateInBuffer.add(country);
-
-        defer(animate, animateInBuffer, false);
-
-        /*if(!country.isActive) {
-          animateInBuffer.add(country);
-        } else {
-          // add all countries to the out buffer to be sure to animate them out later
-          animateOutBuffer.add(country);
-        }*/
-  //      defer(logBuffer, animateInBuffer, "animateInBuffer");
-  //      defer(logBuffer, animateOutBuffer, "animateOutBuffer");
-  //      defer(animate, animateInBuffer);
-  //      defer(animate, animateOutBuffer);
-/*
-        if(country && !country.isActive) {
-          lastCountry = country;
-          if(!country.isAnimating)
-            country.handler.hover(country);
-          console.log("country", country.name)
-        }
-        if(lastCountry && lastCountry.isActive) {
-          lastCountry.handler.blur(lastCountry);
-          console.log("lastCountry", lastCountry.name)
-        } else if(ev.relatedTarget){
-          lastCountry = byId[ev.relatedTarget.id]
-          console.log("lastCountry is not active", (lastCountry.name || lastCountry))
-        }
-*/
-      }
-    }
-
-    // ring buffer implementation takebn from here: http://gameprogrammingpatterns.com/event-queue.html
-    function ringBuffer(max) {
-      var MAX_PENDING = max;
-      var eventQueue = new Array(max);
-      var head = 0, tail = 0;
-      return {
-        hasSpace: function() { // returns true if there is still room left in the buffer
-          return (tail + 1) % MAX_PENDING != head;
-        },
-        isInQueue: function(item) {
-          // check equal pending items
-          for(var i = head; i != tail; i = (i + 1) % MAX_PENDING) {
-            if(item === eventQueue[i]) {
-              return true;
-            }
-          }
-          //return eventQueue.indexOf(item) > -1; NOTE: Doesn't work wich a ring/circular buffer - we find things that should be overwriten
-        },
-        add: function(item) {
-          if(this.isInQueue(item)) return;
-          eventQueue[tail] = item;
-          tail = (tail + 1) % MAX_PENDING;
-        },
-        get: function() {
-          var item;
-          if(head === tail) {
-            if(this.trigger) this.trigger("empty");
-            return null;
-          }
-          item = eventQueue[head];
-          head = (head + 1) % MAX_PENDING;
-          return item;
-        },
-        forEach: function(fn) {
-          for(var i = head; i != tail; i = (i + 1) % MAX_PENDING) {
-            fn(eventQueue[i], i);
-          }
-        }
-      }
-    }
-
-    function animate(buffer, out) {
-      var country = buffer.get();
-      if(!country) {
-        console.log((out ? "out-" : "in-") + " buffer is empty");
-        return; // If there are no pending requests, do nothing
-      }
-      if(out) country.handler.blur(country);
-      else country.handler.hover(country);
-    }
-//      if(country.isAnimating) {
-        /*ringBuffer.add(country);
-        console.log("is animating - push back in queue");
-        return animate(ringBuffer);*/
-//        console.log(country.id + " is animating");
-//        return;
-//      }
-      //console.log(country.id)
-//      if(country.isActive)
-//        country.handler.blur(country);
-//      else
-/*        if(!country.active) {
-          console.log(country.id + " is NOT active")
-          // drain animateOutBuffer when the country starts to animate in
-          country.handler.onIdempotent("active", function() {
-            ringBuffer.forEach(function(country) {
-              //console.log(index, c.id + " should animate out", c.isAnimating);
-              //animate(animateOutBuffer);//defer(animate, animateOutBuffer);
-              console.log("draining buffer: " + country.id);
-              country.handler.blur(country);
-            });
-          });
-          country.handler.hover(country);
-        } else {
-          console.log(country.id + " is active")
-        }
-    }
-*/
-    /*
-    function deactivateCountry() {
-      return function mouseout(ev) {
-        ev.stopPropagation();
-        var country = byId[ev.target.id];
-        if(!country) return; // abort if the DOM node isn't a country
-        if(!country.isAnimating)
-          country.handler.blur(country);
-      }
-    }
-    */
-
-    function moveToTop(svg, path, pathContainer) {
-      //try {
-        pathContainer.removeChild(path);
-        svg.appendChild(path);
-      /*} catch(err) {
-        console.warn(path.id);
-      }*/
-    }
-    function returnToStack(svg, path, pathContainer) {
-    //try {
-        svg.removeChild(path);
-        pathContainer.appendChild(path);
-  /*    } catch(err) {
-        console.warn(path.id);
-      }*/
-    }
-    function addClass(path, c) {
-      path.classList.add(c);
-    }
-    function removeClass(path, c) {
-      path.classList.remove(c);
-    }
-    function defer(fn /* args */) {
-      var args = Array.prototype.slice.call(arguments, 1);
-      return wait.apply(null, [fn, 0].concat(args));
-    }
-    function wait(fn, miliseconds /* args */) {
-      var args = Array.prototype.slice.call(arguments, 2);
-      return setTimeout.apply(null, [fn, miliseconds].concat(args));
     }
   ]]>
 </script>

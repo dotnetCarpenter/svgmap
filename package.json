@@ -1,0 +1,16 @@
+{
+  "name": "svgmap",
+  "version": "0.3.0",
+  "description": "Demo an interactive world map in SVG",
+  "private": true,
+  "scripts": {
+    "start": "live-server --open=map2.svg .",
+    "test": "tap test/*.js"
+  },
+  "author": "dotnetCarpenter <jon.ronnenberg@gmail.com>",
+  "license": "ISC",
+  "devDependencies": {
+    "live-server": "git+https://github.com/dotnetCarpenter/live-server.git",
+    "tap": "^2.3.1"
+  }
+}
