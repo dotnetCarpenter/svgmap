@@ -1,10 +1,7 @@
 "use strict";
 
 var test = require("tape");
-
-function filter(list, predicate) {
-	return list.filter(predicate);
-}
+var filter = require("../lib/filter");
 
 test('basic filter', function(t) {
   t.plan(1);
