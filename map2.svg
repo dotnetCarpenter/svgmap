@@ -32,7 +32,7 @@
   <script type="application/ecmascript">
     <![CDATA[
       "use strict";
-      //util.polyfill();
+      if(util.polyfill) util.polyfill();
     ]]>
   </script>
   <g>
