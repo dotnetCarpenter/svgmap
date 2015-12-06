@@ -499,6 +499,7 @@
         var country = byId[ev.target.id];
 
         if(!country) return;
+        console.log(country.id);
 
         // throw an error if we have exchausted the event queues
         if(!animateInBuffer.hasSpace() || !animateOutBuffer.hasSpace())
@@ -508,7 +509,8 @@
           animateOutBuffer.forEach(function() { animate(animateOutBuffer, true); });
           animateOutBuffer.add(country);
         });
-        animateInBuffer.add(country);
+        if(!country.isAnimating || !country.isActive)
+          animateInBuffer.add(country);
 
         defer(animate, animateInBuffer, false);
 
@@ -551,12 +553,12 @@
         },
         isInQueue: function(item) {
           // check equal pending items
-          /*for(var i = head; i != tail; (i + 1) % MAX_PENDING) {
+          for(var i = head; i != tail; i = (i + 1) % MAX_PENDING) {
             if(item === eventQueue[i]) {
               return true;
             }
-          }*/
-          return eventQueue.indexOf(item) > -1;
+          }
+          //return eventQueue.indexOf(item) > -1; NOTE: Doesn't work wich a ring/circular buffer - we find things that should be overwriten
         },
         add: function(item) {
           if(this.isInQueue(item)) return;
