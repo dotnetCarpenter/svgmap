@@ -4,7 +4,7 @@
   "description": "Demo an interactive world map in SVG",
   "private": true,
   "scripts": {
-    "start": "npm run build && live-server --open=map2.svg .",
+    "start": "npm run build && live-server --open=map2.svg --ignore=lib,test,package.json --browser=firefox  .",
     "test": "tape test/*.js",
     "build": "browserify build/bundle.js --standalone util --debug --outfile build/utilities.js",
     "#postinstall": "mkdirp vendor && cp node_modules/systemjs/dist/system.j* vendor/"
