@@ -2,3 +2,4 @@ node_modules
 build/utilities.js
 map.htm
 .vscode
+build/

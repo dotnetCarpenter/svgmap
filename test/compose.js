@@ -1,14 +1,15 @@
-"use strict";
+'use strict';
 
-var test = require("tape");
-var compose = require("../lib/compose");
+const test = require('tape');
+const compose = require('../lib/compose');
 
-test('compose', function(t) {
+test('compose', t => {
 	t.plan(1);
 
-	var actual = compose(add, double);
+	let actual = compose(add, double);
+	let expected = 42;
 	
-	t.equal(actual(10.5,10.5), 42);
+	t.equal(actual(10.5,10.5), expected);
 	
 	function add(a,b) { return a+b; }
 	function double(a) { return a*2; }
