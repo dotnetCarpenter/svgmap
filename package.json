@@ -9,7 +9,10 @@
     "build": "browserify build/bundle.js --standalone util --debug --outfile build/utilities.js",
     "#postinstall": "mkdirp vendor && cp node_modules/systemjs/dist/system.j* vendor/"
   },
-  "repository" : {"type": "git", "url": "git@gitlab.com:jon.ronnenberg/svgmap.git"},
+  "repository": {
+    "type": "git",
+    "url": "git@gitlab.com:jon.ronnenberg/svgmap.git"
+  },
   "author": "dotnetCarpenter <jon.ronnenberg@gmail.com>",
   "license": "ISC",
   "dependencies": {
@@ -17,7 +20,7 @@
     "mkdirp": "^0.5.1"
   },
   "devDependencies": {
-    "live-server": "git+https://github.com/dotnetCarpenter/live-server.git",
+    "live-server": "^0.9.2",
     "tape": "^4.2.2"
   }
 }
